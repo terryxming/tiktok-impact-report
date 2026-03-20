@@ -235,7 +235,12 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
   <button class="cbtn active" data-idx="3" style="--c:#0d9488">CVR%</button>
 </div>
 <div class="zoom-hint mob-only"><span>👆 双指缩放</span><span>👈 左右滑动</span><span>默认显示发布前后窗口</span><button class="reset-btn" id="resetZoom">复位</button></div>
-<div class="chart-box"><canvas id="aggChart"></canvas></div>
+<div class="chart-box"><canvas id="aggChart"></canvas>
+<div class="slider-wrap mob-only" id="aggSliderWrap">
+  <input type="range" class="chart-slider" id="aggSlider" min="0" value="0">
+  <span class="slider-label" id="aggSliderLabel"></span>
+</div>
+</div>
 
 <h3 id="sec-asin">各 ASIN 独立逐日趋势</h3>
 <div class="cgrid" id="asinCharts"></div>
@@ -274,7 +279,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
-<footer>Generated 2026-03-20 18:48 · Amazon Sales Analytics Dashboard</footer>
+<footer>Generated 2026-03-20 18:52 · Amazon Sales Analytics Dashboard</footer>
 </div>
 
 <script>
@@ -338,6 +343,26 @@ const AGG_DATASETS=[
 ];
 mk('aggChart',AGG.dates,AGG_DATASETS,'全部 ASIN 合计');
 const aggChart=Chart.getChart('aggChart');
+// agg slider
+(function(){
+  const n=AGG.dates.length;
+  const defMin=Math.max(0,7-3);
+  const defMax=Math.min(n-1,7+7);
+  const winSize=defMax-defMin;
+  const sl=document.getElementById('aggSlider');
+  const lb=document.getElementById('aggSliderLabel');
+  if(!sl)return;
+  sl.max=n-1;sl.value=defMin;
+  lb.textContent=AGG.dates[defMin]+' – '+AGG.dates[Math.min(n-1,defMin+winSize)];
+  sl.addEventListener('input',()=>{
+    const v=+sl.value;
+    const lo=Math.max(0,v),hi=Math.min(n-1,v+winSize);
+    aggChart.options.scales.x.min=lo;
+    aggChart.options.scales.x.max=hi;
+    aggChart.update('none');
+    lb.textContent=AGG.dates[lo]+' – '+AGG.dates[hi];
+  });
+})();
 
 // Unified chart controller (aggChart + all ASIN charts)
 function applyMetricState(idx, restore) {
@@ -353,7 +378,7 @@ function applyMetricState(idx, restore) {
         const solo=(i===idx);
         ds.hidden=!solo;
         ds.datalabels={
-          display:solo&&!mob,
+          display:solo,
           color:ds.borderColor,
           font:{size:ch===aggChart?10:9,weight:'bold'},
           anchor:'end',align:'top',offset:2
@@ -444,12 +469,25 @@ if(resetBtn){
     const n=AGG.dates.length;
     const minIdx=Math.max(0,7-3);
     const maxIdx=Math.min(n-1,7+7);
+    const winSize=maxIdx-minIdx;
     const allCharts=[aggChart,...asinCharts];
     allCharts.forEach(ch=>{
       ch.resetZoom();
       ch.options.scales.x.min=minIdx;
       ch.options.scales.x.max=maxIdx;
       ch.update();
+    });
+    // reset sliders
+    const sl=document.getElementById('aggSlider');
+    const lb=document.getElementById('aggSliderLabel');
+    if(sl){sl.value=minIdx;lb.textContent=AGG.dates[minIdx]+' – '+AGG.dates[maxIdx];}
+    document.querySelectorAll('.chart-slider:not(#aggSlider)').forEach((s,i)=>{
+      s.value=minIdx;
+      const lbl=s.nextElementSibling;
+      const dates=CD[ASINS[i]]?.dates||AGG.dates;
+      if(lbl)lbl.textContent=dates[minIdx]+' – '+dates[Math.min(dates.length-1,minIdx+winSize)];
+      const ch=asinCharts[i];
+      if(ch){ch.options.scales.x.min=minIdx;ch.options.scales.x.max=maxIdx;ch.update();}
     });
   });
 }
