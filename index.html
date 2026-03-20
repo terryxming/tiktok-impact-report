@@ -6,6 +6,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,'SF Pro Text','Helvetica Neue','PingFang SC',sans-serif;
@@ -82,6 +84,8 @@ td{padding:6px 8px;border-bottom:1px solid #e8e4df}
   font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;opacity:.4}
 .cbtn.active{background:var(--c);color:#fff;opacity:1}
 .cbtn:hover{opacity:1}
+.mob-only{display:none}
+@media(max-width:768px){.mob-only{display:block}}
 footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:12px;border-top:1px solid #e8e4df}
 @media(max-width:768px){
   html,body{overflow-x:hidden}
@@ -222,6 +226,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="chart-box"><canvas id="aggChart"></canvas></div>
 
 <h3 id="sec-asin">各 ASIN 独立逐日趋势</h3>
+<p class="note mob-only">👆 双指捏合缩放 · 左右滑动 pan · 显示发布前后窗口</p>
 <div class="cgrid" id="asinCharts"></div>
 </section>
 
@@ -258,7 +263,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
-<footer>Generated 2026-03-20 18:20 · Amazon Sales Analytics Dashboard</footer>
+<footer>Generated 2026-03-20 18:25 · Amazon Sales Analytics Dashboard</footer>
 </div>
 
 <script>
@@ -283,17 +288,31 @@ function mk(id,labels,ds,title){
   const el=typeof id==='string'?document.getElementById(id):id;
   if(!el)return;
   const mob=window.innerWidth<=768;
+  const n=labels.length;
+  // mobile: show ±14 days around publish date by default
+  const minIdx=mob?Math.max(0,7-7):0;
+  const maxIdx=mob?Math.min(n-1,7+21):n-1;
   new Chart(el,{type:'line',data:{labels,datasets:ds.map(d=>({
-    ...d,pointRadius:mob?0:(d.pointRadius??1),pointHoverRadius:mob?4:(d.pointHoverRadius??4)
+    ...d,pointRadius:mob?0:(d.pointRadius??1),pointHoverRadius:4
   }))},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{title:{display:!!title,text:title,font:{size:mob?11:13}},
-        annotation:{annotations:ann()},legend:{position:'bottom',labels:{font:{size:mob?9:10},boxWidth:mob?10:12}},
-        tooltip:{mode:'index',intersect:false}},
-      scales:{x:{ticks:{maxRotation:mob?30:45,font:{size:mob?8:9},maxTicksLimit:mob?6:12}},
-        y:{position:'left',title:{display:!mob,text:'Sessions/PV'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?5:8}},
-        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:!mob,text:'销量/CVR%'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?5:8}}},
-      interaction:{mode:'nearest',axis:'x',intersect:false}}
+      plugins:{
+        title:{display:!!title,text:title,font:{size:mob?11:13}},
+        annotation:{annotations:ann()},
+        legend:{position:'bottom',labels:{font:{size:mob?9:10},boxWidth:mob?10:12}},
+        tooltip:{mode:'index',intersect:false},
+        zoom:mob?{pan:{enabled:true,mode:'x'},zoom:{pinch:{enabled:true},wheel:{enabled:false},mode:'x'}}:{}
+      },
+      scales:{
+        x:{
+          min:mob?minIdx:undefined,max:mob?maxIdx:undefined,
+          ticks:{maxRotation:mob?30:45,font:{size:mob?8:9},maxTicksLimit:mob?5:12}
+        },
+        y:{position:'left',title:{display:!mob,text:'Sessions/PV'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?4:8}},
+        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:!mob,text:'销量/CVR%'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?4:8}}
+      },
+      interaction:{mode:'nearest',axis:'x',intersect:false}
+    }
   });
 }
 
