@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="scroll-behavior:smooth"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TikTok 站外推广效果分析 — Ikarao US</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'SF Pro Text','Helvetica Neue','PingFang SC',sans-serif;
+  background:#faf9f7;color:#1d1d1f;line-height:1.6;font-size:14px}
+.wrap{max-width:100%;margin:0 auto;padding:68px 40px 28px 40px}
+h1{font-size:24px;font-weight:700;margin-bottom:4px}
+.subtitle{color:#6e6e73;font-size:13px;margin-bottom:24px}
+.card{background:#fff;border:1px solid #e8e4df;border-radius:10px;padding:20px;margin-bottom:20px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:14px;padding-bottom:6px;border-bottom:2px solid #ff9900}
+.card h3{font-size:14px;font-weight:600;margin:16px 0 8px;color:#1d1d1f}
+.warn{background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;
+  margin-bottom:14px;font-size:13px;color:#664d03}
+.note{font-size:12px;color:#999;margin-bottom:6px}
+/* floating nav bar */
+.sidenav{position:fixed;top:0;left:0;right:0;height:44px;z-index:999;
+  display:flex;align-items:center;justify-content:center;gap:4px;padding:0 20px;
+  background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid #e8e4df;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.sidenav a{display:inline-block;padding:6px 14px;font-size:13px;color:#6e6e73;text-decoration:none;
+  border-radius:6px;white-space:nowrap;transition:all .15s}
+.sidenav a:hover{color:#1d1d1f;background:rgba(0,0,0,0.04)}
+.sidenav a.active{color:#ff9900;font-weight:600;background:#fff8ef}
+/* video cards */
+.vcards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px}
+.vcard{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #e8e4df;border-radius:8px;background:#faf9f7}
+.vcard.active{border-color:#ff9900;background:#fff8ef}
+.vnum{font-size:20px;font-weight:700;color:#ff9900;min-width:32px}
+.vinfo{flex:1;min-width:0}
+.vtitle{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vmeta{font-size:12px;color:#6e6e73}
+.vstats{font-size:12px;color:#1d1d1f;font-weight:500;margin:2px 0}
+.vcard a{font-size:12px;color:#2563eb}
+.ok{color:#1a7f37;font-size:12px;font-weight:600;white-space:nowrap}
+.na{color:#999;font-size:12px;font-style:italic;white-space:nowrap}
+/* table */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f5f3f0;font-weight:600;text-align:left;padding:7px 8px;border-bottom:2px solid #e8e4df;
+  font-size:11px;color:#6e6e73;white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid #e8e4df}
+.n{text-align:right;font-variant-numeric:tabular-nums;font-family:'SF Mono',monospace}
+.g{color:#1a7f37;font-weight:600}
+.r{color:#cf222e}
+.sub{font-weight:400;color:#6e6e73;font-size:11px}
+/* charts */
+.chart-box{border:1px solid #e8e4df;border-radius:8px;padding:14px;margin-bottom:14px;background:#fff}
+.chart-box canvas{width:100%!important;height:300px!important}
+.cgrid{display:grid;grid-template-columns:1fr;gap:14px}
+.cgrid .chart-box canvas{height:280px!important}
+/* conclusion */
+.verdict{padding:12px 16px;border-radius:8px;font-size:14px;font-weight:600;margin-bottom:14px}
+.verdict.neutral{background:#f0f0f0;color:#6e6e73}
+.verdict.positive{background:#dafbe1;color:#1a7f37}
+/* analysis layout */
+.analysis-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.analysis-ctx{background:#faf9f7;border-radius:8px;padding:14px;border:1px solid #e8e4df}
+.analysis-ctx h3{font-size:13px;font-weight:600;margin-bottom:10px;color:#1d1d1f}
+.ctx-item{display:flex;gap:8px;margin-bottom:6px;align-items:baseline}
+.ctx-label{font-size:12px;color:#6e6e73;white-space:nowrap;min-width:56px;font-weight:500}
+.ctx-val{font-size:12px;color:#1d1d1f}
+/* conclusion */
+.cbox{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cbox>div{background:#faf9f7;border-radius:8px;padding:14px;border-left:3px solid #ff9900}
+.cbox h4{font-size:13px;font-weight:600;color:#1d1d1f;margin-bottom:8px}
+.cbox p,.cbox li{font-size:13px;color:#444;line-height:1.7}
+.cbox ul{padding-left:16px}
+.verdict-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.vtag{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.vtag.red{background:#fee2e2;color:#991b1b}
+.vtag.yellow{background:#fef3c7;color:#92400e}
+.vtag.green{background:#d1fae5;color:#065f46}
+.chart-btns{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cbtn{padding:5px 14px;border-radius:20px;border:2px solid var(--c);background:#fff;color:var(--c);
+  font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;opacity:.4}
+.cbtn.active{background:var(--c);color:#fff;opacity:1}
+.cbtn:hover{opacity:1}
+footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:12px;border-top:1px solid #e8e4df}
+@media(max-width:768px){
+  .wrap{padding:56px 12px 20px 12px}
+  h1{font-size:18px}
+  .subtitle{font-size:11px;margin-bottom:16px}
+  .card{padding:14px;margin-bottom:14px;border-radius:8px}
+  .card h2{font-size:14px;margin-bottom:10px}
+  .card h3{font-size:13px;margin:12px 0 6px}
+  /* nav: horizontal scroll */
+  .sidenav{height:40px;gap:2px;padding:0 8px;justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sidenav a{font-size:11px;padding:5px 10px;flex-shrink:0}
+  /* video cards stack */
+  .vcards{grid-template-columns:1fr;gap:8px}
+  .vcard{padding:10px;gap:8px}
+  .vnum{font-size:16px;min-width:24px}
+  .vtitle{font-size:12px}
+  .vmeta,.vstats,.vcard a{font-size:11px}
+  /* analysis layout stack */
+  .analysis-layout{grid-template-columns:1fr;gap:10px;margin-bottom:12px}
+  .analysis-ctx{padding:10px}
+  .analysis-ctx h3{font-size:12px;margin-bottom:8px}
+  .ctx-item{flex-wrap:wrap;gap:4px;margin-bottom:4px}
+  .ctx-label{font-size:11px;min-width:48px}
+  .ctx-val{font-size:11px}
+  /* warn */
+  .warn{padding:8px 10px;font-size:12px}
+  .note{font-size:11px}
+  /* chart buttons */
+  .chart-btns{gap:6px}
+  .cbtn{padding:4px 10px;font-size:11px}
+  /* charts smaller */
+  .chart-box{padding:10px;margin-bottom:10px}
+  .chart-box canvas{height:220px!important}
+  .cgrid .chart-box canvas{height:200px!important}
+  /* conclusion */
+  .cbox{grid-template-columns:1fr;gap:10px}
+  .cbox>div{padding:10px}
+  .cbox h4{font-size:12px}
+  .cbox p,.cbox li{font-size:12px;line-height:1.6}
+  .verdict-bar{gap:6px}
+  .vtag{padding:4px 10px;font-size:11px}
+  /* table */
+  table{font-size:12px}
+  th{font-size:10px;padding:5px 6px}
+  td{padding:4px 6px}
+  footer{font-size:10px}
+}
+</style></head><body>
+
+<nav class="sidenav" id="sidenav">
+  <a href="#sec-overview">视频概览</a>
+  <a href="#sec-analysis">视频 2 分析</a>
+  <a href="#sec-agg">合计趋势</a>
+  <a href="#sec-asin">ASIN 趋势</a>
+  <a href="#sec-conclusion">结论</a>
+</nav>
+
+<div class="wrap">
+
+<h1>TikTok 站外视频推广效果分析</h1>
+<p class="subtitle">品牌 Ikarao（香港奥卡）· Amazon US · 分析日期 2026-03-20 · 数据源：领星 ERP</p>
+
+<section class="card" id="sec-overview">
+<h2>视频概览</h2>
+<div class="vcards"><div class="vcard ">
+          <div class="vnum">#1</div>
+          <div class="vinfo">
+            <div class="vtitle">CUZ MY LOVE IS MINE ALL MINE 😭🤧🥹 #mitski #ikarao #karaoke #alto</div>
+            <div class="vmeta">@rachelchiu1 · 2023-12-31 · 0:42</div>
+            <div class="vstats">▶ 1120万 · ❤ 170万 · 💬 3,493 · ↗ 6,699</div>
+            <a href="https://www.tiktok.com/@rachelchiu1/video/7318562551539813637" target="_blank">打开 TikTok →</a>
+          </div>
+          <div class="na">❌ 产品未上架</div>
+        </div><div class="vcard active">
+          <div class="vnum">#2</div>
+          <div class="vinfo">
+            <div class="vtitle">At least I know I'm not useless 🤪 #ikarao #karaoke #harmony #singing #VoiceEffec…</div>
+            <div class="vmeta">@rachelchiu1 · 2025-11-16 · 0:33</div>
+            <div class="vstats">▶ 51.2万 · ❤ 8.1万 · 💬 92 · ↗ 2,340</div>
+            <a href="https://www.tiktok.com/@rachelchiu1/video/7573380062158834952" target="_blank">打开 TikTok →</a>
+          </div>
+          <div class="ok">✅ 可分析</div>
+        </div><div class="vcard ">
+          <div class="vnum">#3</div>
+          <div class="vinfo">
+            <div class="vtitle">@ikaraoofficial invented the MODERN KARAOKE BOX.. BREAK X1 all in one party…</div>
+            <div class="vmeta">@mamagvlogs2025 · 2024-01-05 · 2:35</div>
+            <div class="vstats">▶ 50.0万 · ❤ 2,599 · 💬 430 · ↗ 634</div>
+            <a href="https://www.tiktok.com/@mamagvlogs2025/video/7320643055701331233" target="_blank">打开 TikTok →</a>
+          </div>
+          <div class="na">❌ 产品未上架</div>
+        </div><div class="vcard ">
+          <div class="vnum">#4</div>
+          <div class="vinfo">
+            <div class="vtitle">Amazing Modern Karaoke Box BREAK X1 from @ikaraoofficial #breakx1 #karaoke #ikar…</div>
+            <div class="vmeta">@mamagvlogs2025 · 2024-01-11 · 2:50</div>
+            <div class="vstats">▶ 27.4万 · ❤ 1,690 · 💬 477 · ↗ 485</div>
+            <a href="https://www.tiktok.com/@mamagvlogs2025/video/7322949052239285537" target="_blank">打开 TikTok →</a>
+          </div>
+          <div class="na">❌ 产品未上架</div>
+        </div></div>
+<p class="note">视频 1/3/4 发布于 2023.12~2024.01，彼时所有 ASIN 尚未上架（最早 B0CLLT85Y6 到 2024-03 才有 Session），无法做前后对比。视频 2 是唯一可分析样本。</p>
+<p class="note">互动数据来源：yt-dlp metadata extraction（2026-03-20 抓取）。视频 #1 播放量 1120万，是品牌最大曝光来源。</p>
+</section>
+
+<section class="card" id="sec-analysis">
+<h2>视频 2 分析：@rachelchiu1 · 2025-11-16</h2>
+
+<div class="warn">⚠️ <b>分析局限性：</b>视频发布日（11/16）距黑五（11/28）仅 12 天，后续窗口完全被黑五 + Cyber Monday 覆盖。<b>季节性促销效应是最大干扰变量，当前数据无法单独归因于视频。</b></div>
+
+<div class="analysis-layout">
+  <div class="analysis-ctx">
+    <h3>📋 分析框架</h3>
+    <div class="ctx-item"><span class="ctx-label">基线期</span><span class="ctx-val">11/09 – 11/15（发布前 7 天日均）</span></div>
+    <div class="ctx-item"><span class="ctx-label">观察期</span><span class="ctx-val">11/16 – 12/16（发布后 31 天）</span></div>
+    <div class="ctx-item"><span class="ctx-label">黑五周</span><span class="ctx-val">11/25 – 12/02（高干扰区）</span></div>
+    <div class="ctx-item"><span class="ctx-label">分析逻辑</span><span class="ctx-val">若视频有效引流，发布后 24-48h 应出现 Session 脉冲；若无脉冲则无直接引流</span></div>
+  </div>
+  <div class="analysis-ctx">
+    <h3>🎯 视频信息</h3>
+    <div class="ctx-item"><span class="ctx-label">创作者</span><span class="ctx-val">@rachelchiu1（粉丝 KOL）</span></div>
+    <div class="ctx-item"><span class="ctx-label">播放量</span><span class="ctx-val">51.2万 次</span></div>
+    <div class="ctx-item"><span class="ctx-label">点赞</span><span class="ctx-val">8.1万（点赞率 15.8%，高互动）</span></div>
+    <div class="ctx-item"><span class="ctx-label">分享</span><span class="ctx-val">2,340（分享率 0.46%）</span></div>
+  </div>
+</div>
+
+<h3 id="sec-agg">全 ASIN 合计 — 逐日趋势图</h3>
+<p class="note">红色虚线 = 视频发布日 11/16 | 橙色区域 = 黑五周 11/25–12/02</p>
+<div class="chart-btns" id="aggBtns">
+  <button class="cbtn cbtn-all active" data-idx="all" style="--c:#1d1d1f">全选</button>
+  <button class="cbtn active" data-idx="0" style="--c:#2563eb">Sessions</button>
+  <button class="cbtn active" data-idx="1" style="--c:#7c3aed">PV</button>
+  <button class="cbtn active" data-idx="2" style="--c:#ff9900">销量</button>
+  <button class="cbtn active" data-idx="3" style="--c:#0d9488">CVR%</button>
+</div>
+<div class="chart-box"><canvas id="aggChart"></canvas></div>
+
+<h3 id="sec-asin">各 ASIN 独立逐日趋势</h3>
+<div class="cgrid" id="asinCharts"></div>
+</section>
+
+<section class="card" id="sec-conclusion">
+<h2>结论</h2>
+<div class="verdict-bar">
+  <span class="vtag red">❌ 无直接引流证据</span>
+  <span class="vtag yellow">⚠️ 季节性干扰严重</span>
+  <span class="vtag yellow">⚠️ 间接品牌效应存疑</span>
+</div>
+<div class="cbox">
+  <div>
+    <h4>① 发布当天无流量脉冲</h4>
+    <p>主力 ASIN B0CR1R7FKP 发布日 Session 3,405，基线日均 3,223，仅 <b>+5.6%</b>，属正常波动范围。站外引流通常在视频发布后 24–48h 内出现明显峰值，本次 Day 0 数据不符合该特征。</p>
+  </div>
+  <div>
+    <h4>② 增长拐点在黑五，而非视频发布日</h4>
+    <p>Session 真正出现明显拐点在 <b>11/20</b>（黑五倒计时 8 天），与视频发布日（11/16）相差 4 天。黑五促销季节性爬坡是更可信的解释，视频贡献无法与之分离。</p>
+  </div>
+  <div>
+    <h4>③ 间接品牌效应存在可能</h4>
+    <p>B0DHPN1DMJ 同比 Session <b>+185%</b>，远超品类均值。@rachelchiu1 在视频中直接展示产品并附 Amazon 链接，可能产生长尾品牌搜索效应，但无法量化。</p>
+  </div>
+  <div>
+    <h4>④ 下次改善建议</h4>
+    <ul>
+      <li>在<b>非促销季</b>发布视频，排除季节性干扰</li>
+      <li>使用 <b>Amazon Attribution 链接</b>追踪站外点击转化</li>
+      <li>监测 <b>Brand Analytics</b> 品牌搜索词变化趋势</li>
+      <li>在视频 caption 加 Amazon 链接，提升直接转化率</li>
+    </ul>
+  </div>
+</div>
+<div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
+</section>
+
+<footer>Generated 2026-03-20 18:06 · Amazon Sales Analytics Dashboard</footer>
+</div>
+
+<script>
+const CD={"B0CR1R7FKP": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [3827, 3940, 2948, 2839, 2952, 2871, 3186, 3405, 2943, 2886, 2930, 3868, 4216, 4744, 4938, 4493, 4302, 4311, 5787, 9006, 5508, 5784, 7200, 4250, 3951, 4285, 4231, 5258, 5442, 4799, 4740, 4922, 4595, 4910, 5596, 5857, 5914, 4550], "pv": [6154, 5927, 4780, 4527, 4879, 4694, 5268, 5607, 4769, 4698, 4729, 6393, 7132, 7920, 8502, 7768, 7052, 7350, 9709, 15439, 9316, 9918, 13013, 6950, 6496, 7026, 6855, 8619, 9003, 7867, 7816, 7896, 7517, 7916, 9223, 9937, 9606, 7568], "volume": [95, 79, 53, 63, 65, 60, 68, 86, 70, 69, 61, 124, 162, 158, 180, 179, 119, 170, 207, 466, 166, 200, 483, 152, 133, 191, 172, 217, 220, 207, 224, 230, 209, 248, 255, 288, 358, 204], "cvr": [2.46, 2.01, 1.8, 2.22, 2.2, 2.09, 2.13, 2.5, 2.38, 2.36, 2.08, 3.21, 3.82, 3.33, 3.58, 3.96, 2.77, 3.9, 3.53, 5.12, 3.01, 3.44, 6.64, 3.53, 3.37, 4.25, 4.04, 4.13, 4.02, 4.29, 4.66, 4.57, 4.55, 4.95, 4.5, 4.87, 5.99, 4.44]}, "B0DCZQX11P": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [706, 698, 713, 681, 1005, 1158, 1360, 1487, 1442, 1432, 1821, 1514, 1611, 1986, 1923, 1713, 1725, 1610, 2240, 4507, 3340, 3321, 4558, 1567, 1314, 1245, 1271, 1567, 1733, 1437, 1517, 1354, 1416, 1815, 1912, 1915, 1836, 2415], "pv": [1147, 1056, 1174, 1033, 1633, 1699, 2091, 2269, 2252, 2194, 2849, 2370, 2508, 3183, 3099, 2780, 2770, 2417, 3388, 6993, 5280, 5083, 7141, 2394, 1894, 2298, 1924, 2362, 2703, 2162, 2243, 2004, 2207, 2738, 2956, 3041, 2794, 3662], "volume": [29, 28, 27, 24, 35, 28, 52, 59, 56, 62, 74, 89, 79, 109, 105, 108, 101, 71, 121, 321, 164, 166, 390, 85, 43, 37, 57, 62, 96, 91, 102, 69, 90, 118, 136, 165, 151, 228], "cvr": [3.97, 3.87, 3.79, 3.52, 3.48, 2.42, 3.75, 3.97, 3.88, 4.33, 4.06, 5.88, 4.9, 5.49, 5.41, 6.25, 5.68, 4.41, 5.4, 7.08, 4.91, 4.94, 8.47, 5.42, 3.2, 2.97, 4.41, 3.96, 5.48, 6.12, 6.72, 5.02, 6.36, 6.45, 7.11, 8.46, 8.17, 9.32]}, "B0DHPN1DMJ": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [2654, 2874, 1766, 1981, 1254, 1260, 1538, 1627, 1320, 1317, 1307, 2096, 2254, 2411, 2827, 2330, 2391, 2367, 2773, 5343, 3137, 3099, 4891, 2564, 2379, 2614, 2614, 3119, 3559, 3081, 3161, 3087, 3279, 3829, 4351, 4716, 4263, 2944], "pv": [4033, 4167, 2522, 2832, 2176, 2054, 2509, 2713, 2223, 2164, 2184, 3590, 3885, 4179, 4920, 3971, 4138, 3959, 4527, 9407, 5538, 5435, 8909, 4204, 3955, 4528, 4530, 5398, 6093, 5230, 5282, 5174, 5451, 6166, 7345, 7977, 7190, 5185], "volume": [65, 45, 20, 36, 48, 54, 47, 50, 38, 35, 39, 86, 102, 109, 148, 98, 105, 109, 104, 311, 154, 146, 412, 120, 130, 158, 142, 164, 185, 185, 192, 178, 192, 211, 257, 277, 336, 194], "cvr": [2.45, 1.57, 1.13, 1.82, 3.83, 4.29, 3.06, 3.07, 2.88, 2.66, 2.98, 4.1, 4.53, 4.52, 5.24, 4.21, 4.39, 4.6, 3.75, 5.82, 4.91, 4.71, 8.28, 4.68, 5.46, 6.04, 5.43, 5.26, 5.2, 6.0, 6.07, 5.77, 5.86, 5.51, 5.91, 5.87, 7.88, 6.59]}, "B0CLLT85Y6": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [730, 594, 425, 428, 427, 429, 533, 629, 572, 574, 565, 798, 860, 977, 1048, 1025, 879, 889, 1296, 1939, 1414, 1290, 1473, 996, 811, 842, 872, 1081, 1118, 983, 1014, 1042, 1168, 1171, 1460, 1423, 1385, 1129], "pv": [1147, 893, 632, 596, 637, 647, 764, 988, 865, 925, 882, 1309, 1355, 1505, 1574, 1562, 1332, 1350, 1967, 3013, 2182, 2048, 2454, 1513, 1224, 1247, 1263, 1590, 1686, 1470, 1459, 1604, 1731, 1772, 2171, 2193, 2090, 1692], "volume": [27, 13, 10, 5, 8, 10, 16, 19, 17, 12, 15, 39, 24, 36, 36, 28, 34, 27, 40, 75, 37, 48, 80, 33, 32, 27, 24, 34, 31, 42, 41, 56, 52, 50, 59, 57, 58, 54], "cvr": [3.7, 2.19, 2.35, 1.17, 1.87, 2.33, 3.0, 3.02, 2.97, 2.09, 2.65, 4.89, 2.79, 3.68, 3.44, 2.73, 3.87, 3.04, 3.09, 3.87, 2.62, 3.72, 5.43, 3.21, 3.95, 3.21, 2.75, 3.15, 2.68, 4.27, 4.04, 5.37, 4.37, 4.27, 3.9, 4.01, 4.19, 4.78]}, "B0DVQBCC47": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [364, 329, 352, 471, 360, 349, 388, 525, 418, 399, 484, 944, 649, 1036, 858, 817, 874, 469, 532, 976, 579, 612, 735, 268, 225, 205, 209, 88, 0, 0, 0, 0, 0, 78, 74, 114, 45, 50], "pv": [591, 536, 583, 771, 623, 528, 600, 868, 652, 634, 769, 1462, 1017, 1694, 1399, 1314, 1450, 730, 824, 1688, 964, 1022, 1199, 404, 359, 327, 318, 143, 0, 0, 0, 0, 0, 120, 107, 183, 72, 69], "volume": [15, 18, 25, 22, 13, 9, 15, 24, 20, 16, 20, 66, 35, 59, 39, 48, 54, 41, 37, 129, 41, 42, 106, 7, 16, 14, 14, 3, 0, 0, 0, 0, 0, 0, 3, 4, 2, 0], "cvr": [4.12, 5.47, 7.1, 4.67, 3.61, 2.58, 3.87, 4.57, 4.78, 4.01, 4.13, 6.99, 5.39, 5.69, 4.55, 5.88, 6.18, 8.74, 6.95, 13.22, 7.08, 6.86, 14.42, 2.61, 7.11, 6.83, 6.7, 3.41, 0, 0, 0, 0, 0, 0.0, 4.05, 3.51, 4.44, 0.0]}, "B0DVQ91695": {"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [326, 342, 363, 245, 415, 366, 430, 376, 350, 285, 334, 502, 500, 554, 515, 419, 503, 260, 284, 527, 337, 367, 515, 194, 179, 234, 175, 259, 317, 1457, 405, 447, 509, 532, 550, 454, 478, 461], "pv": [540, 586, 605, 391, 686, 558, 652, 559, 532, 409, 536, 819, 753, 859, 797, 651, 777, 362, 420, 738, 493, 521, 734, 290, 272, 372, 254, 395, 483, 5296, 673, 781, 963, 892, 981, 764, 826, 759], "volume": [7, 13, 14, 6, 11, 6, 6, 6, 10, 12, 8, 16, 20, 22, 16, 18, 17, 14, 12, 42, 9, 18, 35, 11, 4, 6, 11, 17, 14, 27, 36, 41, 57, 39, 48, 22, 41, 48], "cvr": [2.15, 3.8, 3.86, 2.45, 2.65, 1.64, 1.4, 1.6, 2.86, 4.21, 2.4, 3.19, 4.0, 3.97, 3.11, 4.3, 3.38, 5.38, 4.23, 7.97, 2.67, 4.9, 6.8, 5.67, 2.23, 2.56, 6.29, 6.56, 4.42, 1.85, 8.89, 9.17, 11.2, 7.33, 8.73, 4.85, 8.37, 10.41]}};
+const AGG={"dates": ["11-09", "11-10", "11-11", "11-12", "11-13", "11-14", "11-15", "11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22", "11-23", "11-24", "11-25", "11-26", "11-27", "11-28", "11-29", "11-30", "12-01", "12-02", "12-03", "12-04", "12-05", "12-06", "12-07", "12-08", "12-09", "12-10", "12-11", "12-12", "12-13", "12-14", "12-15", "12-16"], "sessions": [8607, 8777, 6567, 6645, 6413, 6433, 7435, 8049, 7045, 6893, 7441, 9722, 10090, 11708, 12109, 10797, 10674, 9906, 12912, 22298, 14315, 14473, 19372, 9839, 8859, 9425, 9372, 11372, 12169, 11757, 10837, 10852, 10967, 12335, 13943, 14479, 13921, 11549], "volume": [238, 196, 149, 156, 180, 167, 204, 244, 211, 206, 217, 420, 422, 493, 524, 479, 430, 432, 521, 1344, 571, 620, 1506, 408, 358, 433, 420, 497, 546, 552, 595, 574, 600, 666, 758, 813, 946, 728], "pv": [13612, 13165, 10296, 10150, 10634, 10180, 11884, 13004, 11293, 11024, 11949, 15943, 16650, 19340, 20291, 18046, 17519, 16168, 20835, 37278, 23773, 24027, 33450, 15755, 14200, 15798, 15144, 18507, 19968, 22025, 17473, 17459, 17869, 19604, 22783, 24095, 22578, 18935], "cvr": [2.74, 2.23, 2.27, 2.35, 2.81, 2.6, 2.73, 3.02, 2.99, 2.98, 2.91, 4.32, 4.17, 4.21, 4.29, 4.42, 4.0, 4.34, 4.01, 6.0, 3.99, 4.26, 7.69, 4.12, 4.03, 4.5, 4.46, 4.37, 4.46, 4.66, 5.46, 5.23, 5.46, 5.35, 5.4, 5.57, 6.75, 6.26]};
+const PI=7;
+const ASINS=["B0CR1R7FKP", "B0DCZQX11P", "B0DHPN1DMJ", "B0CLLT85Y6", "B0DVQBCC47", "B0DVQ91695"];
+const NAMES={"B0CR1R7FKP": "Smart Karaoke 300W", "B0DCZQX11P": "Karaoke 280W Screen", "B0DHPN1DMJ": "Portable 140W", "B0CLLT85Y6": "Break X1 460W", "B0DVQBCC47": "WiFi YouTube", "B0DVQ91695": "Autotune Echo"};
+
+function ann(){
+  const a={};
+  if(PI!==null){
+    a.pub={type:'line',xMin:PI,xMax:PI,borderColor:'#cf222e',borderWidth:2,borderDash:[4,4],
+      label:{display:true,content:'视频发布',position:'start',backgroundColor:'#cf222e',color:'#fff',font:{size:10}}};
+    a.bf={type:'box',xMin:16,xMax:23,backgroundColor:'rgba(255,153,0,0.07)',borderColor:'rgba(255,153,0,0.25)',
+      borderWidth:1,label:{display:true,content:'黑五周',position:{x:'center',y:'start'},color:'#946200',font:{size:10}}};
+  }
+  return a;
+}
+
+function mk(id,labels,ds,title){
+  const el=typeof id==='string'?document.getElementById(id):id;
+  if(!el)return;
+  new Chart(el,{type:'line',data:{labels,datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{title:{display:!!title,text:title,font:{size:13}},
+        annotation:{annotations:ann()},legend:{position:'bottom',labels:{font:{size:10}}},
+        tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{maxRotation:45,font:{size:9},maxTicksLimit:12}},
+        y:{position:'left',title:{display:true,text:'Sessions/PV'},ticks:{font:{size:10}}},
+        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'销量/CVR%'},ticks:{font:{size:10}}}},
+      interaction:{mode:'nearest',axis:'x',intersect:false}}
+  });
+}
+
+// Register datalabels plugin (only use per-dataset)
+Chart.register(ChartDataLabels);
+
+const AGG_DATASETS=[
+  {label:'Sessions',data:AGG.sessions,borderColor:'#2563eb',backgroundColor:'#2563eb20',fill:true,tension:.3,yAxisID:'y',pointRadius:2,datalabels:{display:false}},
+  {label:'PV',data:AGG.pv,borderColor:'#7c3aed',tension:.3,yAxisID:'y',pointRadius:2,borderDash:[3,3],datalabels:{display:false}},
+  {label:'销量',data:AGG.volume,borderColor:'#ff9900',backgroundColor:'#ff990020',fill:true,tension:.3,yAxisID:'y1',pointRadius:2,datalabels:{display:false}},
+  {label:'CVR%',data:AGG.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:2,borderDash:[2,2],datalabels:{display:false}}
+];
+mk('aggChart',AGG.dates,AGG_DATASETS,'全部 ASIN 合计');
+const aggChart=Chart.getChart('aggChart');
+
+// Unified chart controller (aggChart + all ASIN charts)
+function applyMetricState(idx, restore) {
+  const allCharts=[aggChart,...asinCharts];
+  allCharts.forEach(ch=>{
+    ch.data.datasets.forEach((ds,i)=>{
+      if(restore){
+        ds.hidden=false;
+        ds.datalabels={display:false};
+        ds.pointRadius=ch===aggChart?2:1;
+      } else {
+        const solo=(i===idx);
+        ds.hidden=!solo;
+        ds.datalabels={
+          display:solo,
+          color:ds.borderColor,
+          font:{size:ch===aggChart?10:9,weight:'bold'},
+          anchor:'end',align:'top',offset:2
+        };
+        ds.pointRadius=solo?(ch===aggChart?3:2):1;
+      }
+    });
+    ch.update();
+  });
+}
+
+document.getElementById('aggBtns').addEventListener('click',e=>{
+  const btn=e.target.closest('.cbtn');if(!btn)return;
+  const idx=btn.dataset.idx;
+  const metricBtns=document.querySelectorAll('#aggBtns .cbtn:not(.cbtn-all)');
+  const allBtn=document.querySelector('#aggBtns .cbtn-all');
+
+  if(idx==='all'){
+    // restore all
+    metricBtns.forEach(b=>b.classList.add('active'));
+    allBtn.classList.add('active');
+    applyMetricState(null,true);
+    return;
+  }
+
+  const i=+idx;
+  const wasActive=btn.classList.contains('active');
+  const activeMetrics=[...metricBtns].filter(b=>b.classList.contains('active'));
+  // if only this one was active, clicking again restores all
+  if(activeMetrics.length===1&&wasActive){
+    metricBtns.forEach(b=>b.classList.add('active'));
+    allBtn.classList.add('active');
+    applyMetricState(null,true);
+    return;
+  }
+  // solo select this metric
+  metricBtns.forEach((b,j)=>b.classList.toggle('active',j===i));
+  allBtn.classList.remove('active');
+  applyMetricState(i,false);
+});
+
+const grid=document.getElementById('asinCharts');
+const asinCharts=[];
+ASINS.forEach(a=>{
+  const d=CD[a];if(!d)return;
+  const box=document.createElement('div');box.className='chart-box';
+  const cv=document.createElement('canvas');box.appendChild(cv);grid.appendChild(box);
+  mk(cv,d.dates,[
+    {label:'Sessions',data:d.sessions,borderColor:'#2563eb',tension:.3,yAxisID:'y',pointRadius:1,datalabels:{display:false}},
+    {label:'PV',data:d.pv,borderColor:'#7c3aed',tension:.3,yAxisID:'y',pointRadius:1,borderDash:[3,3],datalabels:{display:false}},
+    {label:'销量',data:d.volume,borderColor:'#ff9900',tension:.3,yAxisID:'y1',pointRadius:1,datalabels:{display:false}},
+    {label:'CVR%',data:d.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:1,borderDash:[2,2],datalabels:{display:false}}
+  ],a+' '+NAMES[a]);
+  asinCharts.push(Chart.getChart(cv));
+});
+
+// scroll-spy for sidenav
+const secs=document.querySelectorAll('[id^="sec-"]');
+const links=document.querySelectorAll('.sidenav a');
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(l=>l.classList.remove('active'));
+      const t=document.querySelector('.sidenav a[href="#'+e.target.id+'"]');
+      if(t)t.classList.add('active');
+    }
+  });
+},{rootMargin:'-20% 0px -60% 0px'});
+secs.forEach(s=>obs.observe(s));
+</script>
+</body></html>
