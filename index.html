@@ -90,6 +90,7 @@ td{padding:6px 8px;border-bottom:1px solid #e8e4df}
   .mob-only{display:block}
   .zoom-hint{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .zoom-hint span{background:#f0f0f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#444}
+  .reset-btn{background:#ff9900;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer}
 }
 footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:12px;border-top:1px solid #e8e4df}
 @media(max-width:768px){
@@ -228,7 +229,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
   <button class="cbtn active" data-idx="2" style="--c:#ff9900">销量</button>
   <button class="cbtn active" data-idx="3" style="--c:#0d9488">CVR%</button>
 </div>
-<div class="zoom-hint mob-only"><span>👆 双指缩放</span><span>👈 左右滑动</span><span>默认显示发布前后窗口</span></div>
+<div class="zoom-hint mob-only"><span>👆 双指缩放</span><span>👈 左右滑动</span><span>默认显示发布前后窗口</span><button class="reset-btn" id="resetZoom">复位</button></div>
 <div class="chart-box"><canvas id="aggChart"></canvas></div>
 
 <h3 id="sec-asin">各 ASIN 独立逐日趋势</h3>
@@ -268,7 +269,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
-<footer>Generated 2026-03-20 18:35 · Amazon Sales Analytics Dashboard</footer>
+<footer>Generated 2026-03-20 18:40 · Amazon Sales Analytics Dashboard</footer>
 </div>
 
 <script>
@@ -306,7 +307,7 @@ function mk(id,labels,ds,title){
         annotation:{annotations:ann()},
         legend:{position:'bottom',labels:{font:{size:mob?9:10},boxWidth:mob?10:12}},
         tooltip:{mode:'index',intersect:false},
-        zoom:mob?{pan:{enabled:true,mode:'x'},zoom:{pinch:{enabled:true},wheel:{enabled:false},mode:'x'}}:{}
+        zoom:mob?{pan:{enabled:true,mode:'x'},zoom:{pinch:{enabled:true,speed:0.05},wheel:{enabled:false},mode:'x'}}:{}
       },
       scales:{
         x:{
@@ -402,6 +403,23 @@ ASINS.forEach(a=>{
   ],a+' '+NAMES[a]);
   asinCharts.push(Chart.getChart(cv));
 });
+
+// reset zoom button
+const resetBtn=document.getElementById('resetZoom');
+if(resetBtn){
+  resetBtn.addEventListener('click',()=>{
+    const n=AGG.dates.length;
+    const minIdx=Math.max(0,7-3);
+    const maxIdx=Math.min(n-1,7+7);
+    const allCharts=[aggChart,...asinCharts];
+    allCharts.forEach(ch=>{
+      ch.resetZoom();
+      ch.options.scales.x.min=minIdx;
+      ch.options.scales.x.max=maxIdx;
+      ch.update();
+    });
+  });
+}
 
 // scroll-spy for sidenav
 const secs=document.querySelectorAll('[id^="sec-"]');
