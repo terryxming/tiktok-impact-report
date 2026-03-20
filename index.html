@@ -84,20 +84,21 @@ td{padding:6px 8px;border-bottom:1px solid #e8e4df}
 .cbtn:hover{opacity:1}
 footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:12px;border-top:1px solid #e8e4df}
 @media(max-width:768px){
-  .wrap{padding:56px 12px 20px 12px}
+  html,body{overflow-x:hidden}
+  .wrap{padding:52px 10px 20px 10px}
   h1{font-size:18px}
-  .subtitle{font-size:11px;margin-bottom:16px}
-  .card{padding:14px;margin-bottom:14px;border-radius:8px}
+  .subtitle{font-size:11px;margin-bottom:14px}
+  .card{padding:12px;margin-bottom:12px;border-radius:8px}
   .card h2{font-size:14px;margin-bottom:10px}
   .card h3{font-size:13px;margin:12px 0 6px}
   /* nav: horizontal scroll */
-  .sidenav{height:40px;gap:2px;padding:0 8px;justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .sidenav a{font-size:11px;padding:5px 10px;flex-shrink:0}
+  .sidenav{height:38px;gap:2px;padding:0 6px;justify-content:flex-start;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .sidenav a{font-size:11px;padding:4px 8px;flex-shrink:0}
   /* video cards stack */
   .vcards{grid-template-columns:1fr;gap:8px}
   .vcard{padding:10px;gap:8px}
   .vnum{font-size:16px;min-width:24px}
-  .vtitle{font-size:12px}
+  .vtitle{font-size:12px;white-space:normal}
   .vmeta,.vstats,.vcard a{font-size:11px}
   /* analysis layout stack */
   .analysis-layout{grid-template-columns:1fr;gap:10px;margin-bottom:12px}
@@ -109,19 +110,19 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
   /* warn */
   .warn{padding:8px 10px;font-size:12px}
   .note{font-size:11px}
-  /* chart buttons */
-  .chart-btns{gap:6px}
-  .cbtn{padding:4px 10px;font-size:11px}
-  /* charts smaller */
-  .chart-box{padding:10px;margin-bottom:10px}
-  .chart-box canvas{height:220px!important}
-  .cgrid .chart-box canvas{height:200px!important}
+  /* chart buttons: wrap + bigger touch targets */
+  .chart-btns{gap:6px;flex-wrap:wrap}
+  .cbtn{padding:6px 12px;font-size:11px}
+  /* charts: TALLER on mobile for readability, not shorter */
+  .chart-box{padding:8px;margin-bottom:10px;overflow:hidden}
+  .chart-box canvas{height:260px!important}
+  .cgrid .chart-box canvas{height:240px!important}
   /* conclusion */
   .cbox{grid-template-columns:1fr;gap:10px}
   .cbox>div{padding:10px}
   .cbox h4{font-size:12px}
   .cbox p,.cbox li{font-size:12px;line-height:1.6}
-  .verdict-bar{gap:6px}
+  .verdict-bar{gap:6px;flex-wrap:wrap}
   .vtag{padding:4px 10px;font-size:11px}
   /* table */
   table{font-size:12px}
@@ -257,7 +258,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
-<footer>Generated 2026-03-20 18:06 · Amazon Sales Analytics Dashboard</footer>
+<footer>Generated 2026-03-20 18:20 · Amazon Sales Analytics Dashboard</footer>
 </div>
 
 <script>
@@ -281,14 +282,17 @@ function ann(){
 function mk(id,labels,ds,title){
   const el=typeof id==='string'?document.getElementById(id):id;
   if(!el)return;
-  new Chart(el,{type:'line',data:{labels,datasets:ds},
+  const mob=window.innerWidth<=768;
+  new Chart(el,{type:'line',data:{labels,datasets:ds.map(d=>({
+    ...d,pointRadius:mob?0:(d.pointRadius??1),pointHoverRadius:mob?4:(d.pointHoverRadius??4)
+  }))},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{title:{display:!!title,text:title,font:{size:13}},
-        annotation:{annotations:ann()},legend:{position:'bottom',labels:{font:{size:10}}},
+      plugins:{title:{display:!!title,text:title,font:{size:mob?11:13}},
+        annotation:{annotations:ann()},legend:{position:'bottom',labels:{font:{size:mob?9:10},boxWidth:mob?10:12}},
         tooltip:{mode:'index',intersect:false}},
-      scales:{x:{ticks:{maxRotation:45,font:{size:9},maxTicksLimit:12}},
-        y:{position:'left',title:{display:true,text:'Sessions/PV'},ticks:{font:{size:10}}},
-        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:'销量/CVR%'},ticks:{font:{size:10}}}},
+      scales:{x:{ticks:{maxRotation:mob?30:45,font:{size:mob?8:9},maxTicksLimit:mob?6:12}},
+        y:{position:'left',title:{display:!mob,text:'Sessions/PV'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?5:8}},
+        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:!mob,text:'销量/CVR%'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?5:8}}},
       interaction:{mode:'nearest',axis:'x',intersect:false}}
   });
 }
