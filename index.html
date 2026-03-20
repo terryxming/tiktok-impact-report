@@ -86,11 +86,16 @@ td{padding:6px 8px;border-bottom:1px solid #e8e4df}
 .cbtn:hover{opacity:1}
 .mob-only{display:none}
 .zoom-hint{display:none}
+.slider-wrap{display:none}
 @media(max-width:768px){
   .mob-only{display:block}
   .zoom-hint{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .zoom-hint span{background:#f0f0f0;border-radius:6px;padding:4px 10px;font-size:11px;color:#444}
   .reset-btn{background:#ff9900;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer}
+  .slider-wrap{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:0 4px}
+  .chart-slider{width:100%;accent-color:#ff9900;height:4px;cursor:pointer}
+  .slider-label{font-size:10px;color:#6e6e73;text-align:center}
+}
 }
 footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:12px;border-top:1px solid #e8e4df}
 @media(max-width:768px){
@@ -269,7 +274,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
-<footer>Generated 2026-03-20 18:46 · Amazon Sales Analytics Dashboard</footer>
+<footer>Generated 2026-03-20 18:48 · Amazon Sales Analytics Dashboard</footer>
 </div>
 
 <script>
@@ -336,6 +341,7 @@ const aggChart=Chart.getChart('aggChart');
 
 // Unified chart controller (aggChart + all ASIN charts)
 function applyMetricState(idx, restore) {
+  const mob=window.innerWidth<=768;
   const allCharts=[aggChart,...asinCharts];
   allCharts.forEach(ch=>{
     ch.data.datasets.forEach((ds,i)=>{
@@ -347,7 +353,7 @@ function applyMetricState(idx, restore) {
         const solo=(i===idx);
         ds.hidden=!solo;
         ds.datalabels={
-          display:solo,
+          display:solo&&!mob,
           color:ds.borderColor,
           font:{size:ch===aggChart?10:9,weight:'bold'},
           anchor:'end',align:'top',offset:2
@@ -355,6 +361,8 @@ function applyMetricState(idx, restore) {
         ds.pointRadius=solo?(ch===aggChart?3:2):1;
       }
     });
+    // mobile: disable tooltip in solo mode
+    ch.options.plugins.tooltip.enabled=restore||!mob;
     ch.update();
   });
 }
@@ -393,6 +401,7 @@ const grid=document.getElementById('asinCharts');
 const asinCharts=[];
 ASINS.forEach(a=>{
   const d=CD[a];if(!d)return;
+  const n=d.dates.length;
   const box=document.createElement('div');box.className='chart-box';
   const cv=document.createElement('canvas');box.appendChild(cv);grid.appendChild(box);
   mk(cv,d.dates,[
@@ -401,7 +410,31 @@ ASINS.forEach(a=>{
     {label:'销量',data:d.volume,borderColor:'#ff9900',tension:.3,yAxisID:'y1',pointRadius:1,datalabels:{display:false}},
     {label:'CVR%',data:d.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:1,borderDash:[2,2],datalabels:{display:false}}
   ],a+' '+NAMES[a]);
-  asinCharts.push(Chart.getChart(cv));
+  const ch=Chart.getChart(cv);
+  asinCharts.push(ch);
+  // range slider
+  const sliderWrap=document.createElement('div');sliderWrap.className='slider-wrap mob-only';
+  const slider=document.createElement('input');
+  slider.type='range';slider.min=0;slider.max=n-1;
+  const mob=window.innerWidth<=768;
+  const defMin=Math.max(0,7-3);
+  const defMax=Math.min(n-1,7+7);
+  const winSize=defMax-defMin;
+  slider.value=defMin;slider.className='chart-slider';
+  const sliderLabel=document.createElement('span');sliderLabel.className='slider-label';
+  sliderLabel.textContent=d.dates[defMin]+' – '+d.dates[Math.min(n-1,defMin+winSize)];
+  slider.addEventListener('input',()=>{
+    const v=+slider.value;
+    const lo=Math.max(0,v);
+    const hi=Math.min(n-1,v+winSize);
+    ch.options.scales.x.min=lo;
+    ch.options.scales.x.max=hi;
+    ch.update('none');
+    sliderLabel.textContent=d.dates[lo]+' – '+d.dates[hi];
+  });
+  sliderWrap.appendChild(slider);
+  sliderWrap.appendChild(sliderLabel);
+  box.appendChild(sliderWrap);
 });
 
 // reset zoom button
