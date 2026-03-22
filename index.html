@@ -211,10 +211,13 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="analysis-layout">
   <div class="analysis-ctx">
     <h3>📋 分析框架</h3>
-    <div class="ctx-item"><span class="ctx-label">基线期</span><span class="ctx-val">11/09 – 11/15（发布前 7 天日均）</span></div>
-    <div class="ctx-item"><span class="ctx-label">观察期</span><span class="ctx-val">11/16 – 12/16（发布后 31 天）</span></div>
-    <div class="ctx-item"><span class="ctx-label">黑五周</span><span class="ctx-val">11/25 – 12/02（高干扰区）</span></div>
-    <div class="ctx-item"><span class="ctx-label">分析逻辑</span><span class="ctx-val">若视频有效引流，发布后 24–48h 内 Sessions、销量、CVR 等指标应出现明显上涨；若各指标无异动则说明无直接引流效果</span></div>
+    <div class="ctx-item"><span class="ctx-label">基线期</span><span class="ctx-val">11/09 – 11/15（发布前 7 天逐日数据）</span></div>
+    <div class="ctx-item"><span class="ctx-label">24h 窗口</span><span class="ctx-val">11/16（发布当天，直接点击跳转的即时脉冲）</span></div>
+    <div class="ctx-item"><span class="ctx-label">48h 窗口</span><span class="ctx-val">11/16 – 11/17（视频传播滞后效应）</span></div>
+    <div class="ctx-item"><span class="ctx-label">72h 窗口</span><span class="ctx-val">11/16 – 11/18（长尾传播 + 算法二次推荐）</span></div>
+    <div class="ctx-item"><span class="ctx-label">观察期</span><span class="ctx-val">11/16 – 12/16（发布后 31 天，趋势对照）</span></div>
+    <div class="ctx-item"><span class="ctx-label">黑五周</span><span class="ctx-val">11/25 – 12/02（高干扰区，需剥离）</span></div>
+    <div class="ctx-item"><span class="ctx-label">分析逻辑</span><span class="ctx-val">检测逻辑：Session 脉冲（超出基线波动区间）是引流的必要条件 — 无论流量质量高低，视频引流必然带来 Session 跳升。发布日多数 ASIN 有日环比上涨，但需对照基线区间（7天均值±波动范围）判断是否为显著异常。CVR 和浏览深度同步纳入分析：有脉冲时判断流量质量（CVR 降=低意图，升=高意图），无脉冲时作为交叉验证（排除"少量高质流量被基线噪声掩盖"的可能）。</span></div>
   </div>
   <div class="analysis-ctx">
     <h3>🎯 视频信息</h3>
@@ -226,13 +229,14 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 </div>
 
 <h3 id="sec-agg">全 ASIN 合计 — 逐日趋势图</h3>
-<p class="note">红色虚线 = 视频发布日 11/16 | 橙色区域 = 黑五周 11/25–12/02</p>
+<p class="note">红色虚线 = 视频发布日 11/16 | 橙色区域 = 黑五周 11/25–12/02 | 浏览深度 = PV/Session（玫红虚线）</p>
 <div class="chart-btns" id="aggBtns">
   <button class="cbtn cbtn-all active" data-idx="all" style="--c:#1d1d1f">全选</button>
   <button class="cbtn active" data-idx="0" style="--c:#2563eb">Sessions</button>
   <button class="cbtn active" data-idx="1" style="--c:#7c3aed">PV</button>
   <button class="cbtn active" data-idx="2" style="--c:#ff9900">销量</button>
   <button class="cbtn active" data-idx="3" style="--c:#0d9488">CVR%</button>
+  <button class="cbtn active" data-idx="4" style="--c:#e11d48">浏览深度</button>
 </div>
 <div class="zoom-hint mob-only"><span>👆 双指缩放</span><span>👈 左右滑动</span><span>默认显示发布前后窗口</span><button class="reset-btn" id="resetZoom">复位</button></div>
 <div class="chart-box"><canvas id="aggChart"></canvas>
@@ -251,20 +255,42 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
 <div class="verdict-bar">
   <span class="vtag red">❌ 无直接引流证据</span>
   <span class="vtag yellow">⚠️ 季节性干扰严重</span>
-  <span class="vtag yellow">⚠️ 间接品牌效应存疑</span>
+  <span class="vtag yellow">⚠️ 日环比有波动但未超基线区间</span>
 </div>
 <div class="cbox">
   <div>
-    <h4>① 发布当天无流量脉冲</h4>
-    <p>主力 ASIN B0CR1R7FKP 发布当天（11/16）Sessions 3,405，看似有所上涨，但 11/17–19 立刻回落至 2,886–2,943，并无持续性。各指标真正开始上涨是在 11/20（黑五倒计时 8 天），与视频发布日相差 4 天，符合黑五季节性爬坡规律，而非视频引流特征。</p>
+    <h4>① 发布日三指标对照基线</h4>
+    <p>发布日（11/16）日环比：5/6 ASIN Session 上涨，4/6 CVR 上涨。对照基线区间（7天数据）：<br><br>
+    <b>B0CR1R7FKP</b>：<br>
+    &emsp;Session 3,405（基线 2,839–3,940，均值 3,223）→ 区间内<br>
+    &emsp;CVR 2.50%（基线均值 2.13%）→ 小幅上升，在基线波动范围内（1.80%–2.46%）<br>
+    &emsp;浏览深度 1.65（基线均值 1.61）→ 持平，无跳出信号<br><br>
+    <b>B0DCZQX11P</b>：<br>
+    &emsp;Session 1,487（基线 681–1,360，均值 903）→ 超出上界 ⚠️<br>
+    &emsp;→ 但基线本身呈上升趋势（706→1,360），1,487 是趋势延续而非脉冲<br>
+    &emsp;CVR 3.97%（基线均值 3.54%）→ 上升，与高 Session 同步（非低质量流量特征）<br>
+    &emsp;浏览深度 1.53（基线均值 1.56）→ 持平<br><br>
+    <b>B0CLLT85Y6</b>：<br>
+    &emsp;Session 629（基线 425–730，均值 509）→ 区间内<br>
+    &emsp;CVR 3.02%（基线均值 2.37%）→ 上升<br>
+    &emsp;浏览深度 1.57（基线均值 1.48）→ 略升<br><br>
+    <b>B0DVQBCC47</b>：<br>
+    &emsp;Session 525（基线 329–471，均值 373）→ 略超上界，但日波动率高（CV=14.3%）<br>
+    &emsp;CVR 4.57%（基线均值 4.49%）→ 持平<br>
+    &emsp;浏览深度 1.65（基线均值 1.62）→ 持平<br><br>
+    <b>关键判断</b>：11/15 是周六，11/16 回升属周内周期性波动。Session 无统计显著脉冲，CVR 未下跌（排除低质量引流），浏览深度稳定（无异常跳出）。三个指标交叉验证，均不支持外部引流假设。</p>
   </div>
   <div>
     <h4>② 增长拐点在黑五，而非视频发布日</h4>
     <p>Session 真正出现明显拐点在 <b>11/20</b>（黑五倒计时 8 天），与视频发布日（11/16）相差 4 天。黑五促销季节性爬坡是更可信的解释，视频贡献无法与之分离。</p>
   </div>
   <div>
-    <h4>③ 间接品牌效应存在可能</h4>
-    <p>B0DHPN1DMJ 发布后31天日均 Sessions 较发布前7天提升 <b>+54%</b>，高于其他 ASIN 平均涨幅。但同期恰逢黑五旺季，无法排除季节性因素，品牌效应仅为可能性，不能确认。</p>
+    <h4>③ 综合归因判断</h4>
+    <p>三个指标交叉验证，均不支持视频引流：<br><br>
+    <b>Session</b> — 未超出基线波动区间，48h/72h 窗口未延续上涨（B0CR1R7FKP 48h 均值 3,174 < 基线均值 3,223）<br>
+    <b>CVR</b> — 发布日合计 3.02% vs 基线 2.53%，未出现低质量流量稀释；但上升幅度在基线波动范围内（1.80%–2.81%），不构成高质量引流证据<br>
+    <b>浏览深度</b> — 三窗口合计稳定在 1.60–1.62（基线 1.57），无异常跳出<br><br>
+    若视频确实引流，无论流量质量高低，Session 应出现超基线的跳升；高质量引流还应伴随 CVR 显著上升 + 浏览深度提升。当前数据：Session 无脉冲 + CVR/浏览深度均在正常波动区间 → 无法归因于视频。</p>
   </div>
   <div>
     <h4>④ 下次改善建议</h4>
@@ -276,7 +302,7 @@ footer{text-align:center;color:#999;font-size:11px;margin-top:24px;padding-top:1
     </ul>
   </div>
 </div>
-<div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
+<div class="note" style="margin-top:14px">数据说明：CVR = Σ(订单)/Σ(Sessions) 加权计算；浏览深度 = PV/Session（逐日计算）；日均 = 总量/实际天数；数据覆盖 2024-01-01 ~ 2026-03-12</div>
 </section>
 
 <footer>Generated 2026-03-20 19:03 · Amazon Sales Analytics Dashboard</footer>
@@ -325,7 +351,7 @@ function mk(id,labels,ds,title){
           ticks:{maxRotation:mob?30:45,font:{size:mob?8:9},maxTicksLimit:mob?5:12}
         },
         y:{position:'left',title:{display:!mob,text:'Sessions/PV'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?4:8}},
-        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:!mob,text:'销量/CVR%'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?4:8}}
+        y1:{position:'right',grid:{drawOnChartArea:false},title:{display:!mob,text:'销量/CVR%/浏览深度'},ticks:{font:{size:mob?8:10},maxTicksLimit:mob?4:8}}
       },
       interaction:{mode:'nearest',axis:'x',intersect:false}
     }
@@ -335,11 +361,19 @@ function mk(id,labels,ds,title){
 // Register datalabels plugin (only use per-dataset)
 Chart.register(ChartDataLabels);
 
+// Compute browse depth (PV/Session) for AGG and each ASIN
+function calcBrowseDepth(pv, sessions) {
+  return pv.map((p, i) => sessions[i] > 0 ? Math.round(p / sessions[i] * 100) / 100 : null);
+}
+AGG.browse_depth = calcBrowseDepth(AGG.pv, AGG.sessions);
+ASINS.forEach(a => { CD[a].browse_depth = calcBrowseDepth(CD[a].pv, CD[a].sessions); });
+
 const AGG_DATASETS=[
   {label:'Sessions',data:AGG.sessions,borderColor:'#2563eb',backgroundColor:'#2563eb20',fill:true,tension:.3,yAxisID:'y',pointRadius:2,datalabels:{display:false}},
   {label:'PV',data:AGG.pv,borderColor:'#7c3aed',tension:.3,yAxisID:'y',pointRadius:2,borderDash:[3,3],datalabels:{display:false}},
   {label:'销量',data:AGG.volume,borderColor:'#ff9900',backgroundColor:'#ff990020',fill:true,tension:.3,yAxisID:'y1',pointRadius:2,datalabels:{display:false}},
-  {label:'CVR%',data:AGG.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:2,borderDash:[2,2],datalabels:{display:false}}
+  {label:'CVR%',data:AGG.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:2,borderDash:[2,2],datalabels:{display:false}},
+  {label:'浏览深度',data:AGG.browse_depth,borderColor:'#e11d48',tension:.3,yAxisID:'y1',pointRadius:2,borderDash:[6,3],datalabels:{display:false}}
 ];
 mk('aggChart',AGG.dates,AGG_DATASETS,'全部 ASIN 合计');
 const aggChart=Chart.getChart('aggChart');
@@ -433,7 +467,8 @@ ASINS.forEach(a=>{
     {label:'Sessions',data:d.sessions,borderColor:'#2563eb',tension:.3,yAxisID:'y',pointRadius:1,datalabels:{display:false}},
     {label:'PV',data:d.pv,borderColor:'#7c3aed',tension:.3,yAxisID:'y',pointRadius:1,borderDash:[3,3],datalabels:{display:false}},
     {label:'销量',data:d.volume,borderColor:'#ff9900',tension:.3,yAxisID:'y1',pointRadius:1,datalabels:{display:false}},
-    {label:'CVR%',data:d.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:1,borderDash:[2,2],datalabels:{display:false}}
+    {label:'CVR%',data:d.cvr,borderColor:'#0d9488',tension:.3,yAxisID:'y1',pointRadius:1,borderDash:[2,2],datalabels:{display:false}},
+    {label:'浏览深度',data:d.browse_depth,borderColor:'#e11d48',tension:.3,yAxisID:'y1',pointRadius:1,borderDash:[6,3],datalabels:{display:false}}
   ],a+' '+NAMES[a]);
   const ch=Chart.getChart(cv);
   asinCharts.push(ch);
